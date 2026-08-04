@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MRCOG Part 1 - Visual & Interactive Basic Science Hub</title>
+    <title>MRCOG Part 1: Dr Duke A. B.</title>
     <style>
         :root {
             --bg-main: #F8FAFC;
@@ -271,6 +271,7 @@
             border-radius: 6px;
             cursor: crosshair;
             touch-action: none;
+            max-width: 100%;
         }
 
         .sketch-tools {
@@ -400,7 +401,7 @@
             line-height: 1.4;
         }
 
-        /* Dynamic Classes */
+        /* Dynamic Subject Styling */
         .subj-anatomy { --subject-color: var(--color-anatomy); --subject-bg: var(--bg-anatomy); }
         .subj-physiology { --subject-color: var(--color-physiology); --subject-bg: var(--bg-physiology); }
         .subj-biochemistry { --subject-color: var(--color-biochemistry); --subject-bg: var(--bg-biochemistry); }
@@ -416,16 +417,16 @@
 <body>
 
     <header>
-        <h1>MRCOG Part 1 Basic Science</h1>
+        <h1>MRCOG Part 1: Dr Duke A. B.</h1>
         <p>Visual Lectures, Interactive Sketchpads & Study Engine</p>
     </header>
 
     <div class="container">
         <!-- Main Navigation -->
         <div class="nav-tabs">
-            <button class="tab-btn active" onclick="switchMainTab('lecture')">🎙️ Lecture & Diagrams</button>
-            <button class="tab-btn" onclick="switchMainTab('flashcards')">🧠 Flashcards</button>
-            <button class="tab-btn" onclick="switchMainTab('sba')">🎯 SBAs</button>
+            <button class="tab-btn active" onclick="switchMainTab('lecture', event)">🎙️ Lecture & Diagrams</button>
+            <button class="tab-btn" onclick="switchMainTab('flashcards', event)">🧠 Flashcards</button>
+            <button class="tab-btn" onclick="switchMainTab('sba', event)">🎯 SBAs</button>
         </div>
 
         <!-- Subject Filter Chips -->
@@ -546,7 +547,7 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
             }
         ];
 
-        // Global App State
+        // Global State Engine
         let currentSubjectFilter = 'all';
         let currentFCIndex = 0;
         let isFCFlipped = false;
@@ -554,7 +555,6 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
         let isPaused = false;
         let activeSpeakerId = null;
 
-        // Render Subject Chips
         function renderChips() {
             const container = document.getElementById('chip-container');
             container.innerHTML = subjects.map(s => `
@@ -575,14 +575,14 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
             renderSBA();
         }
 
-        // --- AUDIO ENGINE ---
+        // --- STABLE AUDIO ENGINE ---
         function playLecture(elementId, text) {
             const contentBlock = document.getElementById(elementId);
 
             if (window.speechSynthesis.speaking && isPaused && activeSpeakerId === elementId) {
                 window.speechSynthesis.resume();
                 isPaused = false;
-                contentBlock.classList.add('speaking');
+                if (contentBlock) contentBlock.classList.add('speaking');
                 return;
             }
 
@@ -594,19 +594,20 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
             }
 
             activeSpeakerId = elementId;
-            contentBlock.classList.add('speaking');
+            if (contentBlock) contentBlock.classList.add('speaking');
+            
             currentUtterance = new SpeechSynthesisUtterance(text);
             currentUtterance.rate = 0.95;
             currentUtterance.pitch = 1.0;
 
             currentUtterance.onend = () => {
-                contentBlock.classList.remove('speaking');
+                if (contentBlock) contentBlock.classList.remove('speaking');
                 isPaused = false;
                 activeSpeakerId = null;
             };
 
             currentUtterance.onerror = () => {
-                contentBlock.classList.remove('speaking');
+                if (contentBlock) contentBlock.classList.remove('speaking');
                 isPaused = false;
                 activeSpeakerId = null;
             };
@@ -632,18 +633,19 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
             document.querySelectorAll('.textbook-content').forEach(el => el.classList.remove('speaking'));
         }
 
-        // --- SKETCHPAD CANVAS LOGIC ---
-        function toggleSketchpad(canvasId) {
-            const wrapper = document.getElementById('sketch-wrap-' + canvasId);
+        // --- SKETCHPAD ENGINE WITH PREVENT-DEFAULT TOUCH HANDLING ---
+        function toggleSketchpad(idx) {
+            const wrapper = document.getElementById('sketch-wrap-' + idx);
             wrapper.classList.toggle('active');
             if (wrapper.classList.contains('active')) {
-                initCanvas(canvasId);
+                initCanvas(idx);
             }
         }
 
-        function initCanvas(canvasId) {
+        function initCanvas(idx) {
+            const canvasId = `sketch-canvas-${idx}`;
             const canvas = document.getElementById(canvasId);
-            if (canvas.dataset.initialized) return;
+            if (!canvas || canvas.dataset.initialized) return;
 
             const ctx = canvas.getContext('2d');
             let drawing = false;
@@ -663,6 +665,7 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
                 const pos = getPos(e);
                 ctx.beginPath();
                 ctx.moveTo(pos.x, pos.y);
+                if (e.touches) e.preventDefault();
             }
 
             function draw(e) {
@@ -673,6 +676,7 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
                 ctx.lineWidth = 2.5;
                 ctx.lineCap = 'round';
                 ctx.stroke();
+                if (e.touches) e.preventDefault();
             }
 
             function stopDraw() {
@@ -683,17 +687,19 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
             canvas.addEventListener('mousemove', draw);
             canvas.addEventListener('mouseup', stopDraw);
 
-            canvas.addEventListener('touchstart', startDraw);
-            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchstart', startDraw, { passive: false });
+            canvas.addEventListener('touchmove', draw, { passive: false });
             canvas.addEventListener('touchend', stopDraw);
 
             canvas.dataset.initialized = "true";
         }
 
-        function clearCanvas(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function clearCanvas(idx) {
+            const canvas = document.getElementById(`sketch-canvas-${idx}`);
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
         }
 
         // Render Lecture Slides
@@ -734,10 +740,9 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
                         ${item.text.split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')}
                     </div>
 
-                    <!-- Sketchpad Wrapper -->
                     <div class="sketchpad-wrapper" id="sketch-wrap-${idx}">
                         <div style="font-size:0.8rem; font-weight:700; margin-bottom:6px; color:#475569;">Interactive Trace & Sketch Area</div>
-                        <canvas id="${idx}" width="320" height="180"></canvas>
+                        <canvas id="sketch-canvas-${idx}" width="320" height="180"></canvas>
                         <div class="sketch-tools">
                             <button class="btn-tool" onclick="clearCanvas('${idx}')">🗑️ Clear Sketch</button>
                         </div>
@@ -838,13 +843,13 @@ Both pathways converge at the Common Pathway by activating Factor 10 (Factor X).
             parent.querySelector('.explanation-box').style.display = 'block';
         }
 
-        // Main Tab Switcher
-        function switchMainTab(tabName) {
+        // Tab Switcher
+        function switchMainTab(tabName, evt) {
             stopSpeech();
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
 
-            event.target.classList.add('active');
+            if (evt && evt.target) evt.target.classList.add('active');
             document.getElementById('view-' + tabName).classList.add('active');
         }
 
