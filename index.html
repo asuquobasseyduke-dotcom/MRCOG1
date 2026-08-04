@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRCOG Part 1 - Visual & Interactive Basic Science Hub</title>
+    <style>
+        :root {
+            --bg-main: #F8FAFC;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --card-bg: #FFFFFF;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+
+            /* Subject Palette */
+            --color-anatomy: #E53E3E;
+            --bg-anatomy: #FFF5F5;
+            
+            --color-physiology: #3182CE;
+            --bg-physiology: #EBF8FF;
+            
+            --color-biochemistry: #38A169;
+            --bg-biochemistry: #F0FFF4;
+            
+            --color-pathology: #805AD5;
+            --bg-pathology: #FAF5FF;
+            
+            --color-embryology: #DD6B20;
+            --bg-embryology: #FFFAF0;
+            
+            --color-genetics: #00A3C4;
+            --bg-genetics: #E6FFFA;
+            
+            --color-pharmacology: #4C51BF;
+            --bg-pharmacology: #EBF8FF;
+            
+            --color-endocrinology: #D69E2E;
+            --bg-endocrinology: #FEFCBF;
+            
+            --color-microbiology: #D53F8C;
+            --bg-microbiology: #FFF5F7;
+            
+            --color-statistics: #4A5568;
+            --bg-statistics: #EDF2F7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            padding-bottom: 50px;
+        }
+
+        header {
+            background: #1E1B4B;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 24px 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: #C7D2FE;
+            margin-top: 4px;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            background: #E2E8F0;
+            padding: 4px;
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #475569;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: #1E1B4B;
+            color: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        /* Subject Filters */
+        .filter-wrapper {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+            scrollbar-width: thin;
+        }
+
+        .chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            border: 1px solid #CBD5E1;
+            background: #FFFFFF;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .chip.active {
+            background: #1E1B4B;
+            color: #FFFFFF;
+            border-color: #1E1B4B;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .subject-badge {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background-color: var(--subject-bg);
+            color: var(--subject-color);
+            margin-bottom: 12px;
+        }
+
+        /* Slide & Audio Styling */
+        .slide-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            border: 1px solid #E2E8F0;
+            border-top: 6px solid var(--subject-color);
+            position: relative;
+        }
+
+        .slide-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .audio-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            background: #F1F5F9;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-audio, .btn-sketch {
+            border: none;
+            background: #1E1B4B;
+            color: #FFFFFF;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-audio:hover, .btn-sketch:hover {
+            opacity: 0.9;
+        }
+
+        .btn-audio.pause { background: #D97706; }
+        .btn-audio.stop { background: #EF4444; }
+        .btn-sketch { background: #4C51BF; }
+
+        /* Diagram Box */
+        .diagram-container {
+            margin: 16px 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid #E2E8F0;
+            background: #F8FAFC;
+            text-align: center;
+        }
+
+        .diagram-container svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .textbook-content {
+            font-size: 0.95rem;
+            line-height: 1.65;
+            color: #334155;
+            background: #FAFAFA;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--subject-color);
+            transition: background 0.3s ease;
+        }
+
+        .textbook-content.speaking {
+            background: #FEF3C7;
+        }
+
+        .textbook-content p {
+            margin-bottom: 10px;
+        }
+
+        /* Canvas Sketchpad Box */
+        .sketchpad-wrapper {
+            display: none;
+            margin-top: 16px;
+            background: #FFFFFF;
+            border: 2px dashed var(--subject-color);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .sketchpad-wrapper.active {
+            display: block;
+        }
+
+        canvas {
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .sketch-tools {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .btn-tool {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 6px;
+            border: 1px solid #CBD5E1;
+            background: #F1F5F9;
+            cursor: pointer;
+        }
+
+        /* Flashcard Component */
+        .flashcard-box {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border-top: 6px solid var(--subject-color);
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 24px;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            transition: transform 0.15s ease;
+        }
+
+        .flashcard-box:active {
+            transform: scale(0.99);
+        }
+
+        .flashcard-question {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+
+        .flashcard-answer {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--subject-color);
+            line-height: 1.4;
+        }
+
+        .fc-nav {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .btn-fc {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius-md);
+            background: #1E1B4B;
+            color: #FFFFFF;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* SBA Component */
+        .sba-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid #E2E8F0;
+            border-top: 5px solid var(--subject-color);
+        }
+
+        .sba-question {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .sba-opt {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border: 1px solid #CBD5E1;
+            background: #F8FAFC;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sba-opt.correct {
+            background-color: #D1FAE5 !important;
+            border-color: #10B981 !important;
+            color: #065F46;
+            font-weight: 700;
+        }
+
+        .sba-opt.wrong {
+            background-color: #FEE2E2 !important;
+            border-color: #EF4444 !important;
+            color: #991B1B;
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: #F1F5F9;
+            border-left: 4px solid var(--subject-color);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #334155;
+            line-height: 1.4;
+        }
+
+        /* Dynamic Classes */
+        .subj-anatomy { --subject-color: var(--color-anatomy); --subject-bg: var(--bg-anatomy); }
+        .subj-physiology { --subject-color: var(--color-physiology); --subject-bg: var(--bg-physiology); }
+        .subj-biochemistry { --subject-color: var(--color-biochemistry); --subject-bg: var(--bg-biochemistry); }
+        .subj-pathology { --subject-color: var(--color-pathology); --subject-bg: var(--bg-pathology); }
+        .subj-embryology { --subject-color: var(--color-embryology); --subject-bg: var(--bg-embryology); }
+        .subj-genetics { --subject-color: var(--color-genetics); --subject-bg: var(--bg-genetics); }
+        .subj-pharmacology { --subject-color: var(--color-pharmacology); --subject-bg: var(--bg-pharmacology); }
+        .subj-endocrinology { --subject-color: var(--color-endocrinology); --subject-bg: var(--bg-endocrinology); }
+        .subj-microbiology { --subject-color: var(--color-microbiology); --subject-bg: var(--bg-microbiology); }
+        .subj-statistics { --subject-color: var(--color-statistics); --subject-bg: var(--bg-statistics); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>MRCOG Part 1 Basic Science</h1>
+        <p>Visual Lectures, Interactive Sketchpads & Study Engine</p>
+    </header>
+
+    <div class="container">
+        <!-- Main Navigation -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchMainTab('lecture')">🎙️ Lecture & Diagrams</button>
+            <button class="tab-btn" onclick="switchMainTab('flashcards')">🧠 Flashcards</button>
+            <button class="tab-btn" onclick="switchMainTab('sba')">🎯 SBAs</button>
+        </div>
+
+        <!-- Subject Filter Chips -->
+        <div class="filter-wrapper" id="chip-container"></div>
+
+        <!-- TAB 1: LECTURE VIEW -->
+        <div id="view-lecture" class="view-section active">
+            <div id="lecture-slides-container"></div>
+        </div>
+
+        <!-- TAB 2: FLASHCARDS VIEW -->
+        <div id="view-flashcards" class="view-section">
+            <div class="flashcard-box subj-anatomy" id="fc-box" onclick="toggleFC()">
+                <span class="subject-badge" id="fc-badge">ANATOMY</span>
+                <div id="fc-content" class="flashcard-question">Loading...</div>
+                <div style="font-size:0.75rem; color:#64748B; margin-top:14px;" id="fc-foot">💡 Tap card to reveal answer</div>
+            </div>
+            <div class="fc-nav">
+                <button class="btn-fc" onclick="prevFC()">← Previous</button>
+                <button class="btn-fc" onclick="nextFC()">Next →</button>
+            </div>
+        </div>
+
+        <!-- TAB 3: SBAS VIEW -->
+        <div id="view-sba" class="view-section">
+            <div id="sba-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const subjects = [
+            { id: 'all', name: 'All Subjects' },
+            { id: 'anatomy', name: 'Anatomy', class: 'subj-anatomy' },
+            { id: 'physiology', name: 'Physiology', class: 'subj-physiology' },
+            { id: 'biochemistry', name: 'Biochemistry', class: 'subj-biochemistry' },
+            { id: 'pathology', name: 'Pathology', class: 'subj-pathology' },
+            { id: 'embryology', name: 'Embryology', class: 'subj-embryology' },
+            { id: 'genetics', name: 'Genetics', class: 'subj-genetics' },
+            { id: 'pharmacology', name: 'Pharmacology', class: 'subj-pharmacology' },
+            { id: 'endocrinology', name: 'Endocrinology', class: 'subj-endocrinology' },
+            { id: 'microbiology', name: 'Microbiology', class: 'subj-microbiology' },
+            { id: 'statistics', name: 'Statistics', class: 'subj-statistics' }
+        ];
+
+        // LECTURE DATA (WITH SVG DIAGRAM EMBEDS)
+        const lectureData = [
+            {
+                subject: 'anatomy',
+                title: 'Section 1.1: Apertures of the Diaphragm',
+                svgDiagram: `<svg viewBox="0 0 400 180" width="100%">
+                    <rect width="400" height="180" fill="#FFF5F5" rx="8"/>
+                    <ellipse cx="200" cy="90" rx="150" ry="70" fill="none" stroke="#E53E3E" stroke-width="4" stroke-dasharray="6,6"/>
+                    <circle cx="200" cy="50" r="14" fill="#3182CE"/>
+                    <text x="200" y="54" fill="#FFF" font-size="10" font-weight="bold" text-anchor="middle">T8 (IVC)</text>
+                    <circle cx="200" cy="90" r="14" fill="#DD6B20"/>
+                    <text x="200" y="94" fill="#FFF" font-size="10" font-weight="bold" text-anchor="middle">T10 (Esoph)</text>
+                    <circle cx="200" cy="130" r="14" fill="#805AD5"/>
+                    <text x="200" y="134" fill="#FFF" font-size="10" font-weight="bold" text-anchor="middle">T12 (Aorta)</text>
+                </svg>`,
+                text: `The diaphragm is a musculofibrous dome-shaped partition separating the thoracic and abdominal cavities. It contains three major apertures through which vital structures pass:
+                
+1. The Vena Caval Foramen: Situated at the T8 vertebral level within the central tendon. Transmits the Inferior Vena Cava and terminal branches of the right phrenic nerve.
+2. The Esophageal Hiatus: Situated at the T10 vertebral level within the right crus. Transmits the Esophagus, the anterior and posterior vagal trunks, and esophageal branches of the left gastric vessels.
+3. The Aortic Hiatus: Situated at the T12 vertebral level behind the median arcuate ligament. Transmits the Descending Aorta, the Thoracic Duct, and the Azygos Vein.
+
+Clinical Note: The esophageal hiatus acts as a sphincter. Disruption of its muscular margins predisposes to sliding hiatal hernia.`
+            },
+            {
+                subject: 'embryology',
+                title: 'Section 5.1: Differentiation of the Female Reproductive Tract',
+                svgDiagram: `<svg viewBox="0 0 400 160" width="100%">
+                    <rect width="400" height="160" fill="#FFFAF0" rx="8"/>
+                    <path d="M 100 30 Q 150 100 200 100 Q 250 100 300 30" fill="none" stroke="#DD6B20" stroke-width="5"/>
+                    <text x="200" y="40" fill="#DD6B20" font-size="11" font-weight="bold" text-anchor="middle">Müllerian Ducts Fusion</text>
+                    <rect x="175" y="95" width="50" height="45" fill="#DD6B20" rx="4"/>
+                    <text x="200" y="122" fill="#FFF" font-size="10" font-weight="bold" text-anchor="middle">Uterus/Cervix</text>
+                </svg>`,
+                text: `Development of the internal female genital tract proceeds in the absence of Anti-Müllerian Hormone (AMH) and testosterone.
+
+The Paramesonephric (Müllerian) Ducts give rise to:
+- The paired Fallopian tubes (cranially).
+- The Uterus and Cervix (fused caudal portions).
+- The upper one-third of the Vagina.
+
+The Urogenital Sinus contributes to the lower two-thirds of the vagina and the vestibular glands.
+
+The Gubernaculum persists in female adult anatomy as two distinct structures: the Round Ligament of the Uterus and the Ligament of the Ovary.`
+            },
+            {
+                subject: 'physiology',
+                title: 'Section 2.3: Physiology of the Coagulation Cascade',
+                svgDiagram: null,
+                text: `Hemostasis involves a strictly regulated cascade of zymogen activations leading to fibrin clot formation.
+
+The Intrinsic Pathway is initiated by blood trauma or contact with exposed collagen, activating Factor 12, which subsequently activates Factor 11, Factor 9, and Factor 8.
+
+The Extrinsic Pathway is activated by tissue factor (Factor 3) exposed at the site of vascular injury, which complexes with Factor 7.
+
+Both pathways converge at the Common Pathway by activating Factor 10 (Factor X). Factor 10a, along with Factor 5a, converts Prothrombin (Factor 2) into active Thrombin (Factor 2a). Thrombin subsequently cleaves soluble Fibrinogen (Factor 1) into insoluble Fibrin monomers.`
+            }
+        ];
+
+        // FLASHCARDS DATA
+        const flashcardsData = [
+            { subject: 'anatomy', q: 'What nerve root forms the Pudendal Nerve?', a: 'S2, S3, S4 ("S2, 3, 4 keeps the perineum off the floor")' },
+            { subject: 'physiology', q: 'What is the effect of Progesterone on respiratory drive in pregnancy?', a: 'Directly stimulates respiratory center → Causes physiological hyperventilation & mild respiratory alkalosis' },
+            { subject: 'embryology', q: 'From which structure does the external genitalia phallus develop in females?', a: 'Genital Tubercle (becomes Clitoris)' }
+        ];
+
+        // SBAS DATA
+        const sbaData = [
+            {
+                subject: 'anatomy',
+                q: 'A 28-year-old undergoing laparoscopic procedures requires identification of the esophageal hiatus. At which thoracic vertebral level does the esophagus cross the diaphragm?',
+                options: ['T8', 'T10', 'T12', 'L1', 'L2'],
+                correct: 1,
+                exp: 'The esophagus crosses the diaphragm at T10 accompanied by the anterior and posterior vagal trunks.'
+            }
+        ];
+
+        // Global App State
+        let currentSubjectFilter = 'all';
+        let currentFCIndex = 0;
+        let isFCFlipped = false;
+        let currentUtterance = null;
+        let isPaused = false;
+        let activeSpeakerId = null;
+
+        // Render Subject Chips
+        function renderChips() {
+            const container = document.getElementById('chip-container');
+            container.innerHTML = subjects.map(s => `
+                <button class="chip ${s.id === currentSubjectFilter ? 'active' : ''}" onclick="filterSubject('${s.id}')">
+                    ${s.name}
+                </button>
+            `).join('');
+        }
+
+        function filterSubject(subjectId) {
+            stopSpeech();
+            currentSubjectFilter = subjectId;
+            renderChips();
+            renderLectures();
+            currentFCIndex = 0;
+            isFCFlipped = false;
+            renderFlashcard();
+            renderSBA();
+        }
+
+        // --- AUDIO ENGINE ---
+        function playLecture(elementId, text) {
+            const contentBlock = document.getElementById(elementId);
+
+            if (window.speechSynthesis.speaking && isPaused && activeSpeakerId === elementId) {
+                window.speechSynthesis.resume();
+                isPaused = false;
+                contentBlock.classList.add('speaking');
+                return;
+            }
+
+            stopSpeech();
+
+            if (!('speechSynthesis' in window)) {
+                alert("Speech Synthesis is not supported in your browser.");
+                return;
+            }
+
+            activeSpeakerId = elementId;
+            contentBlock.classList.add('speaking');
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.rate = 0.95;
+            currentUtterance.pitch = 1.0;
+
+            currentUtterance.onend = () => {
+                contentBlock.classList.remove('speaking');
+                isPaused = false;
+                activeSpeakerId = null;
+            };
+
+            currentUtterance.onerror = () => {
+                contentBlock.classList.remove('speaking');
+                isPaused = false;
+                activeSpeakerId = null;
+            };
+
+            window.speechSynthesis.speak(currentUtterance);
+        }
+
+        function pauseLecture(elementId) {
+            if (window.speechSynthesis.speaking && !isPaused) {
+                window.speechSynthesis.pause();
+                isPaused = true;
+                const contentBlock = document.getElementById(elementId);
+                if (contentBlock) contentBlock.classList.remove('speaking');
+            }
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                isPaused = false;
+                activeSpeakerId = null;
+            }
+            document.querySelectorAll('.textbook-content').forEach(el => el.classList.remove('speaking'));
+        }
+
+        // --- SKETCHPAD CANVAS LOGIC ---
+        function toggleSketchpad(canvasId) {
+            const wrapper = document.getElementById('sketch-wrap-' + canvasId);
+            wrapper.classList.toggle('active');
+            if (wrapper.classList.contains('active')) {
+                initCanvas(canvasId);
+            }
+        }
+
+        function initCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (canvas.dataset.initialized) return;
+
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+
+            function startDraw(e) {
+                drawing = true;
+                const pos = getPos(e);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            }
+
+            function draw(e) {
+                if (!drawing) return;
+                const pos = getPos(e);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = '#E53E3E';
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+
+            function stopDraw() {
+                drawing = false;
+            }
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+
+            canvas.addEventListener('touchstart', startDraw);
+            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', stopDraw);
+
+            canvas.dataset.initialized = "true";
+        }
+
+        function clearCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Render Lecture Slides
+        function renderLectures() {
+            const container = document.getElementById('lecture-slides-container');
+            const filtered = currentSubjectFilter === 'all' ? lectureData : lectureData.filter(l => l.subject === currentSubjectFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:30px; color:#64748B;">No lectures available for this subject.</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map((item, idx) => `
+                <div class="slide-card subj-${item.subject}">
+                    <div class="slide-header">
+                        <span class="subject-badge">${item.subject.toUpperCase()}</span>
+                    </div>
+                    <div class="slide-title">${item.title}</div>
+                    
+                    ${item.svgDiagram ? `<div class="diagram-container">${item.svgDiagram}</div>` : ''}
+
+                    <div class="audio-controls">
+                        <button class="btn-audio" onclick="playLecture('lec-text-${idx}', \`${item.title}. ${item.text.replace(/`/g, '')}\`)">
+                            ▶ Play / Resume
+                        </button>
+                        <button class="btn-audio pause" onclick="pauseLecture('lec-text-${idx}')">
+                            ⏸ Pause
+                        </button>
+                        <button class="btn-audio stop" onclick="stopSpeech()">
+                            ⏹ Reset
+                        </button>
+                        <button class="btn-sketch" onclick="toggleSketchpad('${idx}')">
+                            ✏️ Sketch / Trace
+                        </button>
+                    </div>
+
+                    <div class="textbook-content" id="lec-text-${idx}">
+                        ${item.text.split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')}
+                    </div>
+
+                    <!-- Sketchpad Wrapper -->
+                    <div class="sketchpad-wrapper" id="sketch-wrap-${idx}">
+                        <div style="font-size:0.8rem; font-weight:700; margin-bottom:6px; color:#475569;">Interactive Trace & Sketch Area</div>
+                        <canvas id="${idx}" width="320" height="180"></canvas>
+                        <div class="sketch-tools">
+                            <button class="btn-tool" onclick="clearCanvas('${idx}')">🗑️ Clear Sketch</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Flashcards
+        function renderFlashcard() {
+            const filtered = currentSubjectFilter === 'all' ? flashcardsData : flashcardsData.filter(f => f.subject === currentSubjectFilter);
+            const fcBox = document.getElementById('fc-box');
+            
+            if (filtered.length === 0) {
+                document.getElementById('fc-badge').innerText = "N/A";
+                document.getElementById('fc-content').innerText = "No flashcards in this subject filter.";
+                return;
+            }
+
+            if (currentFCIndex >= filtered.length) currentFCIndex = 0;
+            const item = filtered[currentFCIndex];
+
+            fcBox.className = `flashcard-box subj-${item.subject}`;
+            document.getElementById('fc-badge').innerText = item.subject.toUpperCase();
+            
+            const contentEl = document.getElementById('fc-content');
+            if (isFCFlipped) {
+                contentEl.className = "flashcard-answer";
+                contentEl.innerText = item.a;
+                document.getElementById('fc-foot').innerText = "✓ Answer Revealed";
+            } else {
+                contentEl.className = "flashcard-question";
+                contentEl.innerText = item.q;
+                document.getElementById('fc-foot').innerText = "💡 Tap card to reveal answer";
+            }
+        }
+
+        function toggleFC() {
+            isFCFlipped = !isFCFlipped;
+            renderFlashcard();
+        }
+
+        function nextFC() {
+            const filtered = currentSubjectFilter === 'all' ? flashcardsData : flashcardsData.filter(f => f.subject === currentSubjectFilter);
+            if (filtered.length === 0) return;
+            currentFCIndex = (currentFCIndex + 1) % filtered.length;
+            isFCFlipped = false;
+            renderFlashcard();
+        }
+
+        function prevFC() {
+            const filtered = currentSubjectFilter === 'all' ? flashcardsData : flashcardsData.filter(f => f.subject === currentSubjectFilter);
+            if (filtered.length === 0) return;
+            currentFCIndex = (currentFCIndex - 1 + filtered.length) % filtered.length;
+            isFCFlipped = false;
+            renderFlashcard();
+        }
+
+        // Render SBAs
+        function renderSBA() {
+            const container = document.getElementById('sba-container');
+            const filtered = currentSubjectFilter === 'all' ? sbaData : sbaData.filter(s => s.subject === currentSubjectFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:30px; color:#64748B;">No SBAs available for this subject filter.</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map((item, qIdx) => `
+                <div class="sba-card subj-${item.subject}">
+                    <span class="subject-badge">${item.subject.toUpperCase()}</span>
+                    <div class="sba-question">${item.q}</div>
+                    ${item.options.map((opt, oIdx) => `
+                        <button class="sba-opt" onclick="checkAnswer(this, ${qIdx}, ${oIdx}, ${item.correct})">
+                            ${String.fromCharCode(65 + oIdx)}. ${opt}
+                        </button>
+                    `).join('')}
+                    <div class="explanation-box" id="sba-exp-${qIdx}">
+                        <strong>Explanation:</strong> ${item.exp}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkAnswer(btn, qIdx, selectedOpt, correctOpt) {
+            const parent = btn.parentElement;
+            const buttons = parent.querySelectorAll('.sba-opt');
+
+            buttons.forEach((b, idx) => {
+                b.disabled = true;
+                if (idx === correctOpt) {
+                    b.classList.add('correct');
+                } else if (idx === selectedOpt) {
+                    b.classList.add('wrong');
+                }
+            });
+
+            parent.querySelector('.explanation-box').style.display = 'block';
+        }
+
+        // Main Tab Switcher
+        function switchMainTab(tabName) {
+            stopSpeech();
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById('view-' + tabName).classList.add('active');
+        }
+
+        // Initialize App
+        renderChips();
+        renderLectures();
+        renderFlashcard();
+        renderSBA();
+    </script>
+</body>
+</html>
